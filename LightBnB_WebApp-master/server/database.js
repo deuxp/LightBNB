@@ -1,7 +1,21 @@
+const { Pool } = require('pg');
+require('dotenv').config({path: '../.env'}) // pool config alias'
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
 
-/// Users
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DB,
+  password: process.env.DB_PASS,
+  port: 5432,
+});
+
+
+/////////////
+/// Users ///
+/////////////
 
 /**
  * Get a single user from the database given their email.
@@ -9,18 +23,29 @@ const users = require('./json/users.json');
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  return pool
+    .query('SELECT * FROM users WHERE email = $1', [email])
+    .then(user => {
+      if (!user.rows.length) {
+        return null
+      }
+      return user.rows[0];
+    })
+    .catch(err => {
+      return console.error('youve gone and done it', err)
+    })
 }
 exports.getUserWithEmail = getUserWithEmail;
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Get a single user from the database given their id.
@@ -58,22 +83,65 @@ const getAllReservations = function(guest_id, limit = 10) {
 }
 exports.getAllReservations = getAllReservations;
 
-/// Properties
 
+//////////////////
+/// Properties ///
+//////////////////
 /**
  * Get all properties.
  * @param {{}} options An object containing query options.
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllProperties = function(options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
+const getAllProperties = function (options, limit=10) {
+  return pool
+    .query('SELECT * FROM properties LIMIT $1', [limit])
+    .then(res => {
+      return res.rows;
+    })
+    .catch(err => {
+      return console.error('you done it again', err)
+    });
 }
 exports.getAllProperties = getAllProperties;
+
+
+
+
+// function graveyard //
+
+// /**
+//  * Get a single user from the database given their email.
+//  * @param {String} email The email of the user.
+//  * @return {Promise<{}>} A promise to the user.
+//  */
+//  const getUserWithEmail = function(email) {
+//   let user;
+//   for (const userId in users) {
+//     user = users[userId];
+//     if (user.email.toLowerCase() === email.toLowerCase()) {
+//       break;
+//     } else {
+//       user = null;
+//     }
+//   }
+//   return Promise.resolve(user);
+// }
+
+
+// /**
+// //  * Get all properties.
+// //  * @param {{}} options An object containing query options.
+// //  * @param {*} limit The number of results to return.
+// //  * @return {Promise<[{}]>}  A promise to the properties.
+// //  */
+// // const getAllProperties = function(options, limit = 10) {
+// //   const limitedProperties = {};
+// //   for (let i = 1; i <= limit; i++) {
+// //     limitedProperties[i] = properties[i];
+// //   }
+// //   return Promise.resolve(limitedProperties);
+// // }
 
 
 /**

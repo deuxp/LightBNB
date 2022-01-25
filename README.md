@@ -13,5 +13,5 @@ This project is for educational purposes only.
 
 ## dependencies
 
-- `pg`: version ^8.7.1
+- `pg`: version ^8.0.3
 - dotenv: version ^8.x.x
