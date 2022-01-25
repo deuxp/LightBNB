@@ -32,19 +32,10 @@ const getUserWithEmail = function(email) {
       return user.rows[0];
     })
     .catch(err => {
-      return console.error('youve gone and done it', err)
+      return console.error('#getUserWithEmail Error:', err)
     })
 }
 exports.getUserWithEmail = getUserWithEmail;
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -53,7 +44,17 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
+  return pool
+  .query('SELECT * FROM users WHERE id = $1', [id])
+    .then(user => {
+      if (!user.rows.length) {
+        return null
+      }
+      return user.rows[0];
+    })
+    .catch(err => {
+      return console.error('#getUserWithId Error:', err)
+    })
 }
 exports.getUserWithId = getUserWithId;
 
@@ -64,10 +65,18 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  const { name, email, password } = user;
+  return pool
+    .query(`INSERT INTO users (name, email, password)
+            VALUES ($1, $2, $3)
+            RETURNING *`, [name, email, password])
+    .then(user => {
+      return user.rows[0]
+    })
+    .catch(err => {
+      console.error('#addUser Error:', err)
+    })
+  
 }
 exports.addUser = addUser;
 
@@ -110,6 +119,18 @@ exports.getAllProperties = getAllProperties;
 
 // function graveyard //
 
+
+// /**
+//  * Add a new user to the database.
+//  * @param {{name: string, password: string, email: string}} user
+//  * @return {Promise<{}>} A promise to the user.
+//  */
+//  const addUser =  function(user) {
+//   const userId = Object.keys(users).length + 1;
+//   user.id = userId;
+//   users[userId] = user;
+//   return Promise.resolve(user);
+// }
 // /**
 //  * Get a single user from the database given their email.
 //  * @param {String} email The email of the user.

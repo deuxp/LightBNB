@@ -2,10 +2,12 @@
 
 ## Refactor the Following
 
-- [] const getUserWithId = function (id) {};
-- [] const addUser = function (user) {};
+- [x] const getUserWithId = function (id) {};
+  - [] needs to be tested <-- HOW TO TEST
 
-- [] const getUserWithEmail = function (email) {};
+<!-- - [x] const addUser = function (user) {}; -->
+
+<!-- - [x] const getUserWithEmail = function (email) {};
   1. Accepts an email address and will return a promise.
   2. The promise should resolve with a user object with the given email address, or null if that user does not exist.
 
@@ -22,4 +24,4 @@
     name: 'Tony Soprano',
     email: 'tony_tony@qmail.com',
     password: '$2a$10$FB/BOAVhpuLvpOREQVmvmezD4ED/.JBIDRh70tGevYzYzQgFId2u.'
-  },
+  }, -->
