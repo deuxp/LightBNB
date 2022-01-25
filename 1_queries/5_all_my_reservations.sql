@@ -13,5 +13,5 @@ limit 10;
 
 
 
-
+-- when dong a complex join be sure to use the many to many linking table as the middle: in this case it is the property_reviews that acts as the linking table
 -- when using lots of joins start to specify where all the info is coming from using dot notation and make sure you reference the ERD to make sure that everything is joined by the proper id's

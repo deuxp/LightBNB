@@ -88,7 +88,22 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return pool
+    .query(`
+      SELECT reservations.*, title, number_of_bathrooms, number_of_bedrooms, parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url
+      FROM property_reviews
+      JOIN reservations ON property_reviews.reservation_id = reservations.id
+      JOIN properties ON property_reviews.property_id = properties.id
+      WHERE reservations.guest_id = $1
+      LIMIT $2
+    `, [guest_id, limit])
+    .then(res => {
+      console.log(res.rows)
+      return res.rows;
+    })
+    .catch(err => {
+      console.error('wha happun: ', err)
+    })
 }
 exports.getAllReservations = getAllReservations;
 
@@ -114,7 +129,18 @@ const getAllProperties = function (options, limit=10) {
 }
 exports.getAllProperties = getAllProperties;
 
-
+// pool.query(`
+//   SELECT reservations.*, title, number_of_bathrooms, number_of_bedrooms, parking_spaces, cost_per_night
+//   FROM property_reviews
+//   JOIN reservations ON property_reviews.reservation_id = reservations.id
+//   JOIN properties ON property_reviews.property_id = properties.id
+//   WHERE reservations.guest_id = 1
+//   LIMIT 10
+//   `)
+//   .then(res => {
+//     console.log(res.rows)
+//   })
+//   .catch(err => console.log('error my mans', err))
 
 
 // function graveyard //
