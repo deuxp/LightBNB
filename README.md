@@ -8,7 +8,13 @@ This project is for educational purposes only.
 
 1. clone the repo
 1. update dependencies `npm i`
+1. from the CLI run `psql`
+1. create the database: `CREATE DATABASE "name"`
+  connect to database: `\c "name"`
+1. migrate the tables: `\i migrations/01_schema.sql`
+1. seed the tables: `\i seeds/01_seeds.sql seeds/02_seeds.sql`
 1. super easy config of the `.env file` -- refer to documentation: ![dotenv on npm](https://www.npmjs.com/package/dotenv)
+1. database port, by default, should be `5432`
 1. npm run local and view it at localhost:3000.
 
 ## dependencies
