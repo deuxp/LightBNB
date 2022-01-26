@@ -80,7 +80,10 @@ const addUser =  function(user) {
 }
 exports.addUser = addUser;
 
-/// Reservations
+
+///////////////////
+/// Reservations //
+///////////////////
 
 /**
  * Get all reservations for a single user.
@@ -98,11 +101,10 @@ const getAllReservations = function(guest_id, limit = 10) {
       LIMIT $2
     `, [guest_id, limit])
     .then(res => {
-      console.log(res.rows)
       return res.rows;
     })
     .catch(err => {
-      console.error('wha happun: ', err)
+      console.error('#getAllReservations Error: ', err)
     })
 }
 exports.getAllReservations = getAllReservations;
@@ -111,84 +113,78 @@ exports.getAllReservations = getAllReservations;
 //////////////////
 /// Properties ///
 //////////////////
+
 /**
- * Get all properties.
+ * Get all properties filtering by search conditions.
  * @param {{}} options An object containing query options.
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function (options, limit=10) {
-  return pool
-    .query('SELECT * FROM properties LIMIT $1', [limit])
+  // unpack form items
+  const {
+    city, 
+    owner_id, 
+    minimum_price_per_night,
+    maximum_price_per_night,
+    minimum_rating
+  } = options;
+  // empty params
+  const queryParams = [];
+  const wheel = ['WHERE', 'AND', 'AND']
+  let index = 0;
+
+  // Query Builder
+
+
+  let queryString = `
+  SELECT properties.*, avg(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_reviews ON property_id = properties.id
+  `;
+  let querySuffix = `
+  ORDER BY cost_per_night
+  LIMIT ${limit};
+  `;
+
+  if ( city ) {
+    queryParams.push(`%${city}%`)
+    queryString += `${wheel[index]} city LIKE $${queryParams.length} `
+    index++
+  }
+
+  if (maximum_price_per_night) {
+    queryParams.push(maximum_price_per_night)
+    queryString += `${wheel[index]} cost_per_night < $${queryParams.length} `
+    index++
+  }
+  
+  if (minimum_price_per_night) {
+    queryParams.push(minimum_price_per_night)
+    queryString += `${wheel[index]} cost_per_night > $${queryParams.length} `
+    index++
+  }
+
+  if (minimum_rating) {
+    queryParams.push(minimum_rating)
+    queryString += `
+    GROUP BY properties.id
+    HAVING avg(rating) >= $${queryParams.length} 
+    ${querySuffix}`;
+  } else {
+    queryString += `
+    GROUP BY properties.id 
+    ${querySuffix}`;
+  }
+  return pool.query(queryString, queryParams)
     .then(res => {
       return res.rows;
     })
     .catch(err => {
-      return console.error('you done it again', err)
+      return console.error('#getAllProperties: ', err, queryParams)
     });
 }
 exports.getAllProperties = getAllProperties;
-
-// pool.query(`
-//   SELECT reservations.*, title, number_of_bathrooms, number_of_bedrooms, parking_spaces, cost_per_night
-//   FROM property_reviews
-//   JOIN reservations ON property_reviews.reservation_id = reservations.id
-//   JOIN properties ON property_reviews.property_id = properties.id
-//   WHERE reservations.guest_id = 1
-//   LIMIT 10
-//   `)
-//   .then(res => {
-//     console.log(res.rows)
-//   })
-//   .catch(err => console.log('error my mans', err))
-
-
-// function graveyard //
-
-
-// /**
-//  * Add a new user to the database.
-//  * @param {{name: string, password: string, email: string}} user
-//  * @return {Promise<{}>} A promise to the user.
-//  */
-//  const addUser =  function(user) {
-//   const userId = Object.keys(users).length + 1;
-//   user.id = userId;
-//   users[userId] = user;
-//   return Promise.resolve(user);
-// }
-// /**
-//  * Get a single user from the database given their email.
-//  * @param {String} email The email of the user.
-//  * @return {Promise<{}>} A promise to the user.
-//  */
-//  const getUserWithEmail = function(email) {
-//   let user;
-//   for (const userId in users) {
-//     user = users[userId];
-//     if (user.email.toLowerCase() === email.toLowerCase()) {
-//       break;
-//     } else {
-//       user = null;
-//     }
-//   }
-//   return Promise.resolve(user);
-// }
-
-
-// /**
-// //  * Get all properties.
-// //  * @param {{}} options An object containing query options.
-// //  * @param {*} limit The number of results to return.
-// //  * @return {Promise<[{}]>}  A promise to the properties.
-// //  */
-// // const getAllProperties = function(options, limit = 10) {
-// //   const limitedProperties = {};
-// //   for (let i = 1; i <= limit; i++) {
-// //     limitedProperties[i] = properties[i];
-// //   }
-// //   return Promise.resolve(limitedProperties);
-// // }
 
 
 /**
