@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
-require('dotenv').config({path: '../.env'}) // pool config alias'
+require('dotenv').config({path: '../.env'}) // pool config alias
 const properties = require('./json/properties.json');
-const users = require('./json/users.json');
+// const users = require('./json/users.json');
 
 
 const pool = new Pool({
@@ -121,7 +121,7 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function (options, limit=10) {
-  // unpack form items
+  // form submission
   const {
     city, 
     owner_id, 
@@ -129,25 +129,28 @@ const getAllProperties = function (options, limit=10) {
     maximum_price_per_night,
     minimum_rating
   } = options;
-  // empty params
+
+  // parts for the query builder
   const queryParams = [];
   const wheel = ['WHERE', 'AND', 'AND']
   let index = 0;
 
-  // Query Builder
-
-
+  // Query Builder: empty search fields --> return all properties
+  // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
+  // 1. Selection Skeleton -- works on its own
   let queryString = `
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
   JOIN property_reviews ON property_id = properties.id
   `;
+  // 2. The query suffix, appended to any combination of the query
   let querySuffix = `
   ORDER BY cost_per_night
   LIMIT ${limit};
   `;
 
-  if ( city ) {
+  // 3. Search options:
+  if (city) {
     queryParams.push(`%${city}%`)
     queryString += `${wheel[index]} city LIKE $${queryParams.length} `
     index++
@@ -176,12 +179,13 @@ const getAllProperties = function (options, limit=10) {
     GROUP BY properties.id 
     ${querySuffix}`;
   }
+
   return pool.query(queryString, queryParams)
     .then(res => {
       return res.rows;
     })
     .catch(err => {
-      return console.error('#getAllProperties: ', err, queryParams)
+      return console.error('#getAllProperties: ', err)
     });
 }
 exports.getAllProperties = getAllProperties;
@@ -193,9 +197,38 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+ 
+  const queryParams = []; // populate
+  let columns = `` // populate w $1's +=
+  let values = ``
+
+  // populate the column, values template, and queryParams 
+  for (const key in property) {
+    if (Object.hasOwnProperty.call(property, key)) {
+      const elem = property[key];
+
+      if ( elem ) {
+        // queryParams.push(key)
+        columns += `${key}, `
+        queryParams.push(elem.toString())
+        values += `$${queryParams.length}, `
+      }
+    }
+  }
+  
+  // remove trailing comma
+  columns = columns.slice(0, -2)
+  values = values.slice(0, -2)
+  
+  // query skeleton -- implement colu_valu builder 
+  let queryString = `INSERT INTO properties (${columns})
+  VALUES (${values})
+  RETURNING *;
+  `;
+  
+  return pool
+    .query(queryString, queryParams)
+    .then(res => res.rows)
+    .catch(err => console.error('#addPropery: ', err))
 }
 exports.addProperty = addProperty;
