@@ -4,8 +4,6 @@ Welcome all. This is project with the main focus on bulding a database using `Po
 
 This project is for educational purposes only.
 
-![motel bell](<blockquote class="imgur-embed-pub" lang="en" data-id="a/2pUtSxb"  ><a href="//imgur.com/a/2pUtSxb">motel bell</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>)
-
 ## usage
 
 1. clone the repo
