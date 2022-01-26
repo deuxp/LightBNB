@@ -45,7 +45,7 @@ exports.getUserWithEmail = getUserWithEmail;
  */
 const getUserWithId = function(id) {
   return pool
-  .query('SELECT * FROM users WHERE id = $1', [id])
+    .query('SELECT * FROM users WHERE id = $1', [id])
     .then(user => {
       if (!user.rows.length) {
         return null
@@ -133,14 +133,14 @@ const getAllProperties = function (options, limit=10) {
 
   // parts for the query builder
   const queryParams = [];
-  const wheel = ['WHERE', 'AND', 'AND']
+  const wheel = ['WHERE', 'AND', 'AND', 'AND']
   let index = 0;
 
   // Query Builder: empty search fields --> return all properties
   // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
   // 1. Selection Skeleton -- works on its own
   let queryString = `
-  SELECT properties.*, avg(property_reviews.rating) as average_rating
+  SELECT properties.*, avg(property_reviews.rating) as average_rating, owner_id
   FROM properties
   JOIN property_reviews ON property_id = properties.id
   `;
@@ -167,6 +167,11 @@ const getAllProperties = function (options, limit=10) {
     queryParams.push(minimum_price_per_night)
     queryString += `${wheel[index]} cost_per_night > $${queryParams.length} `
     index++
+  }
+
+  if (owner_id) {
+    queryParams.push(owner_id)
+    queryString += `${wheel[index]} owner_id = $${queryParams.length} `
   }
 
   if (minimum_rating) {
