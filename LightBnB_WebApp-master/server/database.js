@@ -1,7 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config({path: '../.env'}) // pool config alias
-const properties = require('./json/properties.json');
-// const users = require('./json/users.json');
+// const properties = require('./json/properties.json');
 
 
 const pool = new Pool({
@@ -144,6 +143,7 @@ const getAllProperties = function (options, limit=10) {
   FROM properties
   JOIN property_reviews ON property_id = properties.id
   `;
+
   // 2. The query suffix, appended to any combination of the query
   let querySuffix = `
   ORDER BY cost_per_night
@@ -213,7 +213,7 @@ const addProperty = function(property) {
     if (Object.hasOwnProperty.call(property, key)) {
       const elem = property[key];
 
-      if ( elem ) {
+      if (elem) {
         // queryParams.push(key)
         columns += `${key}, `
         queryParams.push(elem.toString())
