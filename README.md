@@ -7,7 +7,8 @@ This project is for educational purposes only.
 ## usage
 
 1. clone the repo
-1. update dependencies `npm i`
+1. update dependencies in root folder `npm i`
+1. update dependencies in boilerplate folder `cd /LightBnB_WebApp-master && npm i`
 1. from the CLI run `psql`
 1. create the database: `CREATE DATABASE "name"`
   connect to database: `\c "name"`
