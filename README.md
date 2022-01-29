@@ -27,4 +27,3 @@ This project is for educational purposes only.
 - cookie-session: ^1.3.3,
 - express: ^4.17.1,
 - nodemon: ^1.19.1,
-- pg: ^8.7.1
